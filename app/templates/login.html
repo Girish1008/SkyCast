@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In | SkyPulse Weather System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white p-4 text-center">
+                    <div class="brand-icon d-inline-block p-3 rounded-circle bg-white-10 mb-2">
+                        <i class="fa-solid fa-user-lock fs-3 text-warning"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Welcome Back</h4>
+                    <p class="text-white-50 small mb-0">Sign in to manage your saved cities and preferences</p>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Username or Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-user text-muted"></i></span>
+                                <input type="text" name="identifier" class="form-control" placeholder="Enter username or email" required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-key text-muted"></i></span>
+                                <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember" id="rememberMe">
+                                <label class="form-check-label small" for="rememberMe">Remember me</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-3 shadow-sm mb-3">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In
+                        </button>
+                    </form>
+
+                    <!-- Demo Helper Credentials -->
+                    <div class="alert alert-info py-2 px-3 small rounded-3 border-0 bg-info-subtle">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        <strong>Demo Account:</strong> Username: <code>admin</code> | Password: <code>Admin@123</code> (or register a fresh account below)
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted small">Don't have an account yet?</span>
+                        <a href="{{ url_for('auth.register') }}" class="fw-semibold text-decoration-none ms-1">Create an Account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

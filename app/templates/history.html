@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Search History | SkyPulse Weather System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-dark text-white p-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h4 class="fw-bold mb-1"><i class="fa-solid fa-clock-rotate-left text-warning me-2"></i>Weather Query History</h4>
+                <p class="text-white-50 small mb-0">Audit log of your recent city lookups and telemetry snapshots</p>
+            </div>
+            {% if history_items %}
+            <button id="clearHistoryBtn" class="btn btn-outline-danger btn-sm">
+                <i class="fa-solid fa-trash me-1"></i> Clear History
+            </button>
+            {% endif %}
+        </div>
+
+        <div class="card-body p-0">
+            {% if history_items %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">City / Query</th>
+                            <th>Temperature</th>
+                            <th>Condition</th>
+                            <th>Date & Time</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history_items %}
+                        <tr>
+                            <td class="ps-4 fw-semibold text-primary">
+                                <i class="fa-solid fa-location-dot me-2 text-danger"></i>{{ item.query_text }}
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ item.temperature }}°</span>
+                            </td>
+                            <td>
+                                {% if item.icon %}
+                                <img src="https://openweathermap.org/img/wn/{{ item.icon }}.png" width="30" height="30" alt="">
+                                {% endif %}
+                                {{ item.weather_condition }}
+                            </td>
+                            <td class="text-muted small">{{ item.searched_at.strftime('%b %d, %Y - %I:%M %p') }}</td>
+                            <td class="text-end pe-4">
+                                <a href="{{ url_for('main.dashboard') }}?city={{ item.query_text }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-eye me-1"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="fa-regular fa-clock fs-1 mb-3"></i>
+                <h5>No search history logged yet</h5>
+                <p class="small">Searches made from the dashboard will be automatically cataloged here.</p>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-sm">Explore Weather</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const clearBtn = document.getElementById('clearHistoryBtn');
+if (clearBtn) {
+    clearBtn.addEventListener('click', async () => {
+        if (!confirm('Clear all your search history?')) return;
+        try {
+            const res = await fetch('/api/history', { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            }
+        } catch (e) {
+            alert('Failed to clear history');
+        }
+    });
+}
+</script>
+{% endblock %}

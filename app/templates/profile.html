@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile | SkyPulse Weather System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="fa-solid fa-sliders text-warning me-2"></i>Profile & Preferences</h4>
+                        <p class="text-white-50 small mb-0">Configure your personal dashboard settings and credentials</p>
+                    </div>
+                    <span class="badge bg-secondary">User ID: #{{ user.id }}</span>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-user me-2"></i>General Information</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Username</label>
+                                <input type="text" class="form-control bg-light" value="{{ user.username }}" readonly>
+                                <div class="form-text">Username cannot be changed.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Full Name</label>
+                                <input type="text" name="full_name" class="form-control" value="{{ user.full_name or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Default City</label>
+                                <input type="text" name="default_city" class="form-control" value="{{ user.default_city or 'New York' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Preferred Temperature Units</label>
+                                <select name="preferred_units" class="form-select">
+                                    <option value="metric" {% if user.preferred_units == 'metric' %}selected{% endif %}>Metric (°C, m/s)</option>
+                                    <option value="imperial" {% if user.preferred_units == 'imperial' %}selected{% endif %}>Imperial (°F, mph)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-key me-2"></i>Change Password (Optional)</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">New Password</label>
+                                <input type="password" name="new_password" class="form-control" placeholder="Leave blank to keep current">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Confirm New Password</label>
+                                <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter new password">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                                <i class="fa-solid fa-floppy-disk me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

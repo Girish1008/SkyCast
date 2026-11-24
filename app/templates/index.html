@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}SkyPulse | Cloud-Based Weather Information Management System{% endblock %}
+
+{% block content %}
+<div class="hero-section text-white py-5 position-relative overflow-hidden">
+    <div class="container py-lg-5 position-relative z-index-2">
+        <div class="row align-items-center gy-5">
+            <div class="col-lg-7 text-center text-lg-start">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill glass-pill small text-warning">
+                    <i class="fa-solid fa-bolt"></i> Real-Time Public API Telemetry & AI Advisory
+                </div>
+                <h1 class="display-4 fw-extrabold mb-3">
+                    Intelligent Weather Management, <span class="gradient-text">Engineered for the Cloud</span>
+                </h1>
+                <p class="lead text-light opacity-90 mb-4">
+                    Monitor live atmospheric conditions, inspect 5-day interactive forecast trajectories, receive instant severe weather alerts, and receive smart recommendations anywhere on earth.
+                </p>
+                
+                <!-- Quick City Search Widget -->
+                <div class="card glass-card p-2 mb-4 border-0 shadow-lg">
+                    <form action="{{ url_for('main.dashboard') }}" method="GET" class="d-flex gap-2">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-white">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" name="city" class="form-control bg-transparent border-0 text-white search-input" placeholder="Enter any city name (e.g. London, Tokyo, Mumbai, New York)..." required>
+                        </div>
+                        <button type="submit" class="btn btn-warning fw-semibold px-4 rounded-3 text-dark">
+                            Explore
+                        </button>
+                    </form>
+                </div>
+
+                <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg px-4 shadow">
+                        <i class="fa-solid fa-gauge-high me-2"></i> Launch Dashboard
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fa-solid fa-user-plus me-2"></i> Create Free Account
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Hero Live Preview Graphic -->
+            <div class="col-lg-5">
+                <div class="card weather-hero-card shadow-2xl border-0 p-4 text-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-location-dot me-1"></i> Live Station</span>
+                            <h3 class="fw-bold mb-0">Tokyo, JP</h3>
+                            <small class="text-white-50">Global Metropolitan Hub</small>
+                        </div>
+                        <img src="https://openweathermap.org/img/wn/02d@2x.png" alt="Cloudy" class="hero-weather-icon">
+                    </div>
+                    <div class="d-flex align-items-baseline gap-3 my-2">
+                        <div class="display-3 fw-bold">22°C</div>
+                        <div class="text-white-50 fs-5">Partly Cloudy</div>
+                    </div>
+                    <hr class="border-white-20 my-3">
+                    <div class="row text-center g-2 small">
+                        <div class="col-3">
+                            <div class="metric-mini p-2 rounded">
+                                <i class="fa-solid fa-droplet text-info mb-1"></i>
+                                <div>Humidity</div>
+                                <strong class="text-white">58%</strong>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="metric-mini p-2 rounded">
+                                <i class="fa-solid fa-wind text-teal mb-1"></i>
+                                <div>Wind</div>
+                                <strong class="text-white">4.2 m/s</strong>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="metric-mini p-2 rounded">
+                                <i class="fa-solid fa-gauge text-warning mb-1"></i>
+                                <div>Pressure</div>
+                                <strong class="text-white">1014 hPa</strong>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="metric-mini p-2 rounded">
+                                <i class="fa-solid fa-eye text-success mb-1"></i>
+                                <div>Visibility</div>
+                                <strong class="text-white">10 km</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5 my-4">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">SYSTEM CAPABILITIES</span>
+        <h2 class="fw-bold">Enterprise Cloud Architecture Features</h2>
+        <p class="text-muted">Designed for high reliability, responsiveness, and seamless public API integration.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Feature 1 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card p-4 border-0 shadow-sm rounded-4">
+                <div class="feature-icon bg-primary text-white mb-3">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                </div>
+                <h5 class="fw-bold">Real-Time Weather Telemetry</h5>
+                <p class="text-muted mb-0">High-precision temperature, humidity percentage, atmospheric pressure, wind velocity, and cardinal wind direction powered by OpenWeatherMap API.</p>
+            </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card p-4 border-0 shadow-sm rounded-4">
+                <div class="feature-icon bg-success text-white mb-3">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <h5 class="fw-bold">5-Day Visual Forecasts</h5>
+                <p class="text-muted mb-0">Dynamic interactive Chart.js visualizations tracking temperature shifts, precipitation probability curves, and atmospheric pressure trends.</p>
+            </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card p-4 border-0 shadow-sm rounded-4">
+                <div class="feature-icon bg-danger text-white mb-3">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h5 class="fw-bold">Automated Severe Alerts</h5>
+                <p class="text-muted mb-0">Proactive safety warnings identifying extreme heat waves, freezing conditions, heavy rainfall, high wind gales, and severe squalls.</p>
+            </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card p-4 border-0 shadow-sm rounded-4">
+                <div class="feature-icon bg-warning text-dark mb-3">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h5 class="fw-bold">AI Advisory & Recommendations</h5>
+                <p class="text-muted mb-0">Intelligent context-aware advice for daily attire, outdoor athletic safety (running/cycling), travel driving index, and hydration guidance.</p>
+            </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card p-4 border-0 shadow-sm rounded-4">
+                <div class="feature-icon bg-info text-white mb-3">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                </div>
+                <h5 class="fw-bold">Location-Based GPS Detection</h5>
+                <p class="text-muted mb-0">One-click geolocation detection using the HTML5 Navigator Geolocation API with coordinate fallback lookup.</p>
+            </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card p-4 border-0 shadow-sm rounded-4">
+                <div class="feature-icon bg-secondary text-white mb-3">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h5 class="fw-bold">Secure Authentication & Favorites</h5>
+                <p class="text-muted mb-0">Bcrypt-hashed credentials, multi-city bookmarking, historical audit trails, and customizable temperature unit preferences (°C / °F).</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

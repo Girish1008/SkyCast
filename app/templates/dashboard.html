@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}Weather Dashboard | SkyPulse Cloud System{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+    <!-- Top Action / Control Bar -->
+    <div class="row align-items-center mb-4 gy-3">
+        <div class="col-lg-5">
+            <form id="weatherSearchForm" class="d-flex gap-2">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="cityInput" class="form-control border-start-0" placeholder="Search world city (e.g., London, Tokyo, Paris, Sydney)..." value="{{ initial_city }}" required>
+                    <button type="submit" class="btn btn-primary px-3 fw-semibold">
+                        <i class="fa-solid fa-search me-1"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-lg-7 d-flex justify-content-lg-end align-items-center gap-2 flex-wrap">
+            <!-- Geolocation Button -->
+            <button id="geoBtn" class="btn btn-outline-primary btn-sm px-3 shadow-sm" title="Detect your exact location via GPS">
+                <i class="fa-solid fa-location-crosshairs me-1"></i> Detect Location
+            </button>
+
+            <!-- Temperature Unit Toggle -->
+            <div class="btn-group btn-group-sm shadow-sm" role="group">
+                <input type="radio" class="btn-check" name="unitToggle" id="unitMetric" value="metric" {% if units == 'metric' %}checked{% endif %}>
+                <label class="btn btn-outline-secondary" for="unitMetric">°C (Metric)</label>
+
+                <input type="radio" class="btn-check" name="unitToggle" id="unitImperial" value="imperial" {% if units == 'imperial' %}checked{% endif %}>
+                <label class="btn btn-outline-secondary" for="unitImperial">°F (Imperial)</label>
+            </div>
+
+            <!-- Favorite Toggle Button -->
+            <button id="favoriteBtn" class="btn btn-outline-danger btn-sm px-3 shadow-sm" data-auth="{{ 'true' if current_user.is_authenticated else 'false' }}">
+                <i class="fa-regular fa-heart me-1" id="favIcon"></i> <span id="favText">Save City</span>
+            </button>
+
+            <!-- Refresh Button -->
+            <button id="refreshBtn" class="btn btn-light btn-sm border px-3 shadow-sm" title="Refresh Live Weather">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert / Banner Container (Populated dynamically) -->
+    <div id="alertsContainer" class="mb-4"></div>
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingIndicator" class="text-center py-5 d-none">
+        <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden">Loading telemetry...</span>
+        </div>
+        <p class="text-muted mt-2 fw-semibold">Fetching telemetry and running analytical models...</p>
+    </div>
+
+    <!-- Main Dashboard Content Grid -->
+    <div id="dashboardContent">
+        <div class="row g-4">
+            <!-- Left Column: Primary Weather Card & Telemetry Grid -->
+            <div class="col-xl-4 col-lg-5">
+                <!-- Hero Weather Card -->
+                <div class="card weather-main-card shadow-sm border-0 rounded-4 text-white p-4 mb-4 position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <span class="badge bg-white-20 rounded-pill px-3 py-1 mb-2" id="stationStatus">
+                                <i class="fa-solid fa-satellite text-warning me-1"></i> Live Station
+                            </span>
+                            <h2 class="fw-extrabold mb-0" id="cityName">--</h2>
+                            <p class="text-white-70 small mb-0" id="locationCoords">Lat: -- &bull; Lon: --</p>
+                        </div>
+                        <img id="weatherIcon" src="" alt="Condition" class="main-weather-icon">
+                    </div>
+
+                    <div class="my-3 position-relative z-1">
+                        <div class="display-2 fw-extrabold" id="currentTemp">--°</div>
+                        <div class="fs-5 text-white-90 fw-medium" id="weatherDesc">--</div>
+                        <div class="text-white-70 small mt-1">
+                            Feels like <span id="feelsLike">--°</span> &bull; High: <span id="tempMax">--°</span> | Low: <span id="tempMin">--°</span>
+                        </div>
+                    </div>
+
+                    <hr class="border-white-20 my-3 position-relative z-1">
+
+                    <div class="d-flex justify-content-between align-items-center small text-white-80 position-relative z-1">
+                        <div><i class="fa-regular fa-sun text-warning me-1"></i> Sunrise: <strong id="sunriseTime">--</strong></div>
+                        <div><i class="fa-solid fa-moon text-info me-1"></i> Sunset: <strong id="sunsetTime">--</strong></div>
+                    </div>
+                </div>
+
+                <!-- 4 Atmospheric Telemetry Metrics -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 metric-card">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="metric-icon-bubble bg-info-subtle text-info">
+                                    <i class="fa-solid fa-droplet"></i>
+                                </div>
+                                <span class="text-muted small fw-semibold">Humidity</span>
+                            </div>
+                            <h4 class="fw-bold mb-1" id="humidityVal">--%</h4>
+                            <div class="progress" style="height: 6px;">
+                                <div id="humidityBar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 metric-card">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="metric-icon-bubble bg-primary-subtle text-primary">
+                                    <i class="fa-solid fa-wind"></i>
+                                </div>
+                                <span class="text-muted small fw-semibold">Wind Speed</span>
+                            </div>
+                            <h4 class="fw-bold mb-1" id="windVal">--</h4>
+                            <small class="text-muted" id="windDirection">Dir: --</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 metric-card">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="metric-icon-bubble bg-warning-subtle text-warning">
+                                    <i class="fa-solid fa-gauge"></i>
+                                </div>
+                                <span class="text-muted small fw-semibold">Pressure</span>
+                            </div>
+                            <h4 class="fw-bold mb-1" id="pressureVal">-- hPa</h4>
+                            <small class="text-muted" id="pressureStatus">Normal Sea Level</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 metric-card">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="metric-icon-bubble bg-success-subtle text-success">
+                                    <i class="fa-solid fa-eye"></i>
+                                </div>
+                                <span class="text-muted small fw-semibold">Visibility</span>
+                            </div>
+                            <h4 class="fw-bold mb-1" id="visibilityVal">-- km</h4>
+                            <small class="text-muted" id="visibilityStatus">Clear Horizon</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Smart Advisory Card -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 advisory-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="feature-icon-sm bg-warning text-dark rounded-circle">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <h5 class="fw-bold mb-0">AI Condition Advisory</h5>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-secondary small text-uppercase mb-2"><i class="fa-solid fa-shirt me-1"></i> Recommended Attire</h6>
+                        <ul class="list-unstyled mb-0 small" id="clothingList">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="fw-bold text-secondary small text-uppercase mb-0"><i class="fa-solid fa-person-running me-1"></i> Outdoor Activity Index</h6>
+                            <span class="badge bg-success-subtle text-success" id="activityBadge">Optimal</span>
+                        </div>
+                        <p class="small text-muted mb-2" id="activityNote">--</p>
+                        <div class="small bg-light p-2 rounded-3" id="activitiesBreakdown">
+                            <!-- Activities -->
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-car me-1"></i> Driving & Travel Safety</h6>
+                        <div class="small text-muted" id="drivingAdvice">--</div>
+                    </div>
+
+                    <div>
+                        <h6 class="fw-bold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-suitcase me-1"></i> Essential Gear to Carry</h6>
+                        <div class="d-flex flex-wrap gap-1" id="gearList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Interactive Charts and 5-Day Forecast -->
+            <div class="col-xl-8 col-lg-7">
+                <!-- Forecast Chart Card -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="fa-solid fa-chart-area text-primary me-2"></i>Weather Trajectory Visualizer</h5>
+                            <small class="text-muted">3-hourly multi-parameter forecast trend</small>
+                        </div>
+
+                        <!-- Chart metric selector tabs -->
+                        <ul class="nav nav-pills nav-pills-custom" id="chartMetricTabs">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-metric="temp">Temperature</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-metric="rain">Precipitation %</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-metric="humidity">Humidity & Wind</button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="chart-container position-relative" style="min-height: 280px; max-height: 320px;">
+                        <canvas id="weatherTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 5-Day Forecast Grid -->
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-calendar-days text-success me-2"></i>5-Day Extended Forecast</h5>
+                        <small class="text-muted" id="forecastCityLabel">Daily Outlook</small>
+                    </div>
+
+                    <div class="row g-3" id="forecastCardsRow">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

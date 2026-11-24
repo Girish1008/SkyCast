@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: weather_cloud_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_123
+      MYSQL_DATABASE: weather_db
+      MYSQL_USER: weather_user
+      MYSQL_PASSWORD: weather_pass_123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: weather_cloud_web
+    restart: always
+    ports:
+      - "5000:8080"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=prod-cloud-secret-token-key-298319
+      - DATABASE_URL=mysql+pymysql://weather_user:weather_pass_123@db:3306/weather_db
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
